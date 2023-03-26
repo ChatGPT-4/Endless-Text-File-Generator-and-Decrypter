@@ -1,46 +1,44 @@
 const fs = require("fs");
 const crypto = require("crypto");
 
-let count = 0; // Zähler für die Anzahl der erstellten Dateien
-let password = "securePassword"; // Passwort zum Verschlüsseln der Dateien
+let outputDirectory = "output";
+let password = "securePassword";
+let fileIndex = 0;
 
-// Überprüfe, ob der Ordner "output" bereits vorhanden ist
-if (!fs.existsSync("output")) {
-  fs.mkdirSync("output");
+// Create the output directory if it does not exist
+if (!fs.existsSync(outputDirectory)) {
+  fs.mkdirSync(outputDirectory);
 }
 
-// Funktion zum Erstellen einer neuen verschlüsselten Datei
-function createEncryptedFile() {
-  let fileName = `output/file-${count}.enc`;
-  let randomString = crypto.randomBytes(100).toString("hex");
-
-  // Verschlüsselung des Textes mit dem Passwort
-  let cipher = crypto.createCipher("aes-256-cbc", password);
-  let encrypted = Buffer.concat([cipher.update(randomString), cipher.final()]);
-
-  fs.writeFile(fileName, encrypted, function(err) {
-    if (err) {
-      console.error(`Fehler beim Schreiben der verschlüsselten Datei ${fileName}:`, err);
-    } else {
-      console.log(`Verschlüsselte Datei ${fileName} erfolgreich erstellt.`);
-      count++;
-      createEncryptedFile();
-    }
-  });
-}
-
-// Starte die Funktion zum Erstellen von verschlüsselten Dateien
-createEncryptedFile();
-
-// Beende das Programm, wenn der Benutzer "q" eingibt
-process.stdin.setEncoding("utf8");
-process.stdin.on("readable", function() {
-  let chunk = process.stdin.read();
-  if (chunk != null) {
-    chunk = chunk.trim();
-    if (chunk === "q") {
-      console.log("Programm wurde manuell gestoppt.");
-      process.exit();
-    }
+// Generate endless encrypted text files
+console.log("Press 'q' to stop the file generator.");
+process.stdin.on("data", function(data) {
+  if (data.toString().trim().toLowerCase() === "q") {
+    console.log("File generator stopped.");
+    process.exit();
   }
 });
+
+// Continuously generate encrypted text files
+(function generateFiles() {
+  // Generate a random string
+  let randomString = crypto.randomBytes(16).toString("hex");
+
+  // Encrypt the random string with the password
+  let cipher = crypto.createCipher("aes-256-cbc", password);
+  let encrypted = cipher.update(randomString, "utf8", "hex");
+  encrypted += cipher.final("hex");
+
+  // Write the encrypted string to a file
+  let fileName = `${outputDirectory}/file-${fileIndex}.enc`;
+  fs.writeFile(fileName, encrypted, function(err) {
+    if (err) {
+      console.error(`Error writing file ${fileName}:`, err);
+    } else {
+      console.log(`File ${fileName} written with length ${encrypted.length}.`);
+      fileIndex++;
+      process.title = `Files Generated: ${fileIndex}`;
+      generateFiles();
+    }
+  });
+})();
