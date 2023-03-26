@@ -1,12 +1,11 @@
 {
   "name": "endless-text-file-generator",
-  "version": "2.0.0",
-  "description": "A program that creates endless encrypted text files with random strings.",
+  "version": "2.1.0",
+  "description": "Generates endless encrypted text files and decrypts them.",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node index.js",
+    "decrypt": "node decrypter.js"
   },
-  "dependencies": {},
-  "author": "dawey",
-  "license": "MIT"
+  "author": "dawey"
 }
